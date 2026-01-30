@@ -1,5 +1,5 @@
 import './globals.css';
-import { Navbar } from './components/Navbar';
+import Navbar  from './components/Navbar';
 import { Poppins, Noto_Sans_Malayalam } from "next/font/google";
 
 const poppins = Poppins({
@@ -20,10 +20,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ml" dir="rtl">
+    <html lang="ml" dir="rtr">
       <body className={`${poppins.className} ${malayalam.className} min-h-screen flex flex-col`}>
-        {/* <Navbar /> */}
-        <main className="flex-grow container mx-auto px-4 py-6">
+        {/* Sidebar / Navbar */}
+        <Navbar />
+        <main className="">
           {children}
         </main>
       </body>

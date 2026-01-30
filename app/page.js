@@ -37,7 +37,7 @@ export default async function Home() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight">
-            <span className="block text-slate-900">Ask Any Islamic Question</span>
+            {/* <span className="block text-slate-900">Ask Any Islamic Question</span> */}
             <span className="block bg-gradient-to-r from-emerald-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Get Clear Authentic Answers
             </span>

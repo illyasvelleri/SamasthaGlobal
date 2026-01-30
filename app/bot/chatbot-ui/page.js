@@ -306,7 +306,7 @@ export default function ChatbotUI() {
               🤖
             </div>
             <div>
-              <h1 className="font-bold text-white text-base">Echo AI Assistant</h1>
+              <h1 className="font-bold text-white text-base">Samastha Universe</h1>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                 <p className="text-xs text-emerald-300">Online</p>
@@ -422,7 +422,7 @@ export default function ChatbotUI() {
               <p className="text-xs text-gray-400 text-center">💡 Use number keys (1-9, 0) for quick selection</p>
             </div>
           </div>
-          <p className="text-xs text-gray-600 text-center">Powered by Echo AI • Smart City Assistant</p>
+          <p className="text-xs text-gray-600 text-center">Powered by Alathurpadi Dars • Smart Universe Assistant</p>
         </footer>
       </div>
 
