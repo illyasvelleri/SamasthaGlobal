@@ -296,7 +296,7 @@ export default function ChatbotUI() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-0 sm:p-4">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-0">
       <div className="w-full h-screen sm:h-[700px] sm:max-w-md bg-gradient-to-b from-gray-900 to-black sm:rounded-3xl sm:shadow-2xl overflow-hidden flex flex-col border border-gray-800">
         
         {/* Header */}
