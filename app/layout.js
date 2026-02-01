@@ -75,7 +75,7 @@ export default function RootLayout({ children }) {
         {/* Optional: only show Navbar when needed */}
         <Navbar />
 
-        <main className="flex-1 pt-16">
+        <main className="flex-1">
           {children}
         </main>
 

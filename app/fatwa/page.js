@@ -61,7 +61,7 @@ export default function FatwasPage() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-stone-50 relative overflow-x-hidden">
+    <div dir="rtl" className="min-h-screen bg-stone-50 relative overflow-x-hidden pt-16">
       {/* Subtle ambient background */}
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-stone-100/40 via-transparent to-neutral-50/30" />

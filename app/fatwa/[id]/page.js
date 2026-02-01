@@ -11,7 +11,7 @@ export default function FatwaDetailPage({ params }) {
   const fatwa = getFatwaById(id);
   if (!fatwa) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/30 pt-16">
         <div className="text-center p-10 bg-white/80 rounded-2xl shadow-xl max-w-md">
           <h1 className="text-3xl font-bold text-slate-800 mb-4">ഫത്വ കണ്ടെത്തിയില്ല</h1>
           <p className="text-slate-600 mb-6">ID: {id} — ഈ ഫത്വ JSON-ൽ ഇല്ല</p>

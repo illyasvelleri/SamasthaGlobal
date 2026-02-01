@@ -199,7 +199,7 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-gradient-to-br from-stone-50 via-white to-blue-50/10">
+    <div className="relative h-screen w-full overflow-hidden bg-gradient-to-br from-stone-50 via-white to-blue-50/10 pt-16">
       
       {/* Ambient Background */}
       <div className="absolute inset-0 -z-10">

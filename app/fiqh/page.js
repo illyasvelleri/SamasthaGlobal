@@ -288,15 +288,15 @@ export default function AIAssistant() {
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white mb-6 sm:mb-8 leading-[1.1] px-4">
                 <span className="bg-gradient-to-r from-white via-blue-50 to-cyan-50 bg-clip-text text-transparent">
-                  Intelligence
+                  Ask Your Fiqh
                 </span>
                 <br />
-                <span className="text-white/60">at your service</span>
+                <span className="text-white/60">Questions</span>
               </h1>
 
               {/* Subtitle */}
               <p className="text-base sm:text-lg md:text-xl text-white/40 mb-12 sm:mb-16 md:mb-20 max-w-md font-light tracking-wide px-4">
-                Ask anything. Get authoritative answers.
+                Ask fiqh. Get authoritative answers.
               </p>
 
               {/* Sample Question Cards */}

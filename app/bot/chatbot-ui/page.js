@@ -148,7 +148,7 @@ export default function IntelligenceAssistant() {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (!showChat) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-emerald-50/30 to-stone-100 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-stone-50 via-emerald-50/30 to-stone-100 relative overflow-hidden pt-16">
         {/* Subtle background patterns */}
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,_rgba(16,185,129,0.1)_0%,_transparent_50%)]"></div>
@@ -300,7 +300,7 @@ export default function IntelligenceAssistant() {
         </div>
 
         {/* Fixed input area */}
-        <div className="fixed inset-x-0 bottom-0 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pt-10 pb-8 px-5 sm:px-8 lg:px-12">
+        <div className="fixed bottom-0 left-0 right-0 z-[1000] px-4 pb-4 md:px-8 md:pb-6 md:left-1/2 md:-translate-x-1/2 bg-gradient-to-t from-stone-50 via-stone-50/95 to-transparent pt-10 pb-8 px-5 sm:px-8 lg:px-12">
           <form onSubmit={handleChatSubmit} className="max-w-4xl mx-auto">
             <div className="relative">
               <div className="bg-white/70 backdrop-blur-xl border border-emerald-600/15 rounded-full overflow-hidden shadow-[0_4px_24px_rgba(5,150,105,0.08)] focus-within:border-emerald-600/30 focus-within:bg-white/85 focus-within:shadow-[0_8px_32px_rgba(5,150,105,0.12)] transition-all duration-300 flex items-center">
