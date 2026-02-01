@@ -1,58 +1,96 @@
+// import { NextResponse } from "next/server";
+// import { connectDB } from "@/lib/db";
+// import FiqhChunk from "@/models/FiqhChunk";
+
+// export async function POST(req) {
+//   await connectDB();
+
+//   const body = await req.json();
+//   const { book, topic, subtopic, chunkId, order, text } = body;
+
+//   if (!book || !topic || !text) {
+//     return NextResponse.json(
+//       { error: "Missing required fields" },
+//       { status: 400 }
+//     );
+//   }
+
+//   // Auto-generate chunkId if not provided
+//   const id = chunkId || `${topic.replace(/\s+/g, "_")}-${Date.now()}`;
+
+//   try {
+//     await FiqhChunk.create({
+//       book,
+//       topic,
+//       subtopic,
+//       chunkId: id,
+//       order: order ? Number(order) : undefined,
+//       text,
+//     });
+//     return NextResponse.json({ success: true, chunkId: id });
+//   } catch (err) {
+//     console.error(err);
+//     return NextResponse.json({ error: err.message }, { status: 500 });
+//   }
+// }
+
+
 import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import FiqhChunk from "@/models/FiqhChunk";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req) {
+  await connectDB();
+
+  const { book, topic, subtopic, chunkId, order, text } = await req.json();
+
+  if (!book || !topic || !text) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Auto-generate chunkId if not provided
+  const id = chunkId || `${topic.replace(/\s+/g, "_")}-${Date.now()}`;
+
+  // Call GPT to generate keywords
+  let keywords = [];
   try {
-    const body = await req.json();
-
-    const { text, bookName } = body;
-
-    if (!text || !bookName) {
-      return NextResponse.json(
-        { error: "Text and bookName are required" },
-        { status: 400 }
-      );
-    }
-
-    const N8N_WEBHOOK = process.env.N8N_WEBHOOK_URL;
-
-    if (!N8N_WEBHOOK) {
-      return NextResponse.json(
-        { error: "N8N webhook URL not configured" },
-        { status: 500 }
-      );
-    }
-
-    const res = await fetch(N8N_WEBHOOK, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text, bookName }),
+    const gptResponse = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are an Arabic fiqh assistant." },
+        {
+          role: "user",
+          content: `Extract 5-10 relevant keywords (in Arabic) from this fiqh text:\n${text}`,
+        },
+      ],
+      temperature: 0,
     });
 
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(err);
-    }
+    const rawKeywords = gptResponse.choices[0].message.content.trim();
+    // Split by comma or newline
+    keywords = rawKeywords.split(/,|\n/).map(k => k.trim()).filter(Boolean);
+  } catch (err) {
+    console.error("GPT keyword generation failed:", err.message);
+  }
 
-    let data = null;
-    try {
-      data = await res.json();
-    } catch {
-      data = { message: "n8n responded without JSON" };
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Upload sent to n8n successfully",
-      data,
+  try {
+    await FiqhChunk.create({
+      book,
+      topic,
+      subtopic,
+      chunkId: id,
+      order: order ? Number(order) : undefined,
+      text,
+      keywords,
+      length: text.length,
     });
-  } catch (error) {
-    console.error("Upload API Error:", error);
 
-    return NextResponse.json(
-      { error: "Failed to send data to n8n" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, chunkId: id, keywords });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -4,31 +4,46 @@
 @tailwind components;
 @tailwind utilities;
 
-/* app/globals.css or inside page */
-html, body {
-  direction: rtl;
-  text-align: right;   /* default for RTL */
-  font-family: 'Noto Sans Malayalam', 'Manrope', system-ui, sans-serif;
+/* =========================
+   GLOBAL DEFAULT (LTR)
+   ========================= */
+html,
+body {
+  direction: ltr;
+  text-align: left;
+  font-family: 'Poppins', 'Noto Sans Malayalam', system-ui, sans-serif;
 }
 
-.ltr-force,
+/* =========================
+   Inputs & form elements
+   ========================= */
 input,
-button,
-a,
-time,
-span:not([class*="malayalam"]),
-/* Add classes or selectors for numbers, icons, English parts */
-
-/* For search bar – keep typing from left-to-right inside input */
-input::placeholder,
-input {
+textarea,
+select,
+button {
   direction: ltr;
   text-align: left;
 }
 
-/* Numbers, views count, dates */
+/* =========================
+   Numbers, dates, counts
+   ========================= */
 .views-count,
-.date {
+.date,
+.number,
+time {
   direction: ltr;
-  font-feature-settings: 'tnum'; /* tabular numbers if needed */
+  unicode-bidi: plaintext;
+  font-feature-settings: 'tnum';
+}
+
+/* =========================
+   OPTIONAL: Arabic-only block
+   (use ONLY if needed later)
+   ========================= */
+.arabic,
+[lang="ar"] {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Amiri', serif;
 }
