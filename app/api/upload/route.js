@@ -58,16 +58,30 @@ export async function POST(req) {
   let keywords = [];
   try {
     const gptResponse = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "You are an Arabic fiqh assistant." },
-        {
-          role: "user",
-          content: `Extract 5-10 relevant keywords (in Arabic) from this fiqh text:\n${text}`,
-        },
-      ],
-      temperature: 0,
-    });
+  model: "gpt-4o-mini",
+  temperature: 0,
+  messages: [
+    {
+      role: "system",
+      content: "You are a Shafi'i fiqh scholar extracting retrieval signals."
+    },
+    {
+      role: "user",
+      content: `
+From the following fiqh text, extract AT MOST 12 Arabic retrieval keywords.
+Rules:
+- Focus on ruling phrases and legal qualifiers
+- Avoid generic words like: الصلاة، الفقه، الإسلام، العبادة
+- Prefer phrases that indicate obligation, exception, or negation
+- Each keyword must be 1–4 words only
+- Output as a plain list, one per line
+
+TEXT:
+${text}
+      `
+    }
+  ]
+});
 
     const rawKeywords = gptResponse.choices[0].message.content.trim();
     // Split by comma or newline
