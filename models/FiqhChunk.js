@@ -18,26 +18,31 @@
 import mongoose from "mongoose";
 
 const FiqhChunkSchema = new mongoose.Schema({
-  book: { type: String, required: true },            // e.g., "Fathul Mueen"
-  madhhab: { type: String, default: "Shafi" },       // default madhhab
-  topic: { type: String, required: true, index: true },  // main topic
-  subtopic: { type: String, index: true },               // optional subtopic
-  chunkId: { type: String, required: true, unique: true }, // unique ID
-  order: { type: Number },                            // optional ordering
-  text: { type: String, required: true },            // full chunk text
-  keywords: { type: [String], default: [] },         // optional keywords for fast search
-  length: { type: Number },                          // optional length of chunk (words/characters)
-  summary: { type: String },                         // optional summary of the chunk
-  createdAt: { type: Date, default: Date.now },
+    book: { type: String, required: true },            // e.g., "Fathul Mueen"
+    madhhab: { type: String, default: "Shafi" },       // default madhhab
+    topic: { type: String, required: true, index: true },  // main topic
+    subtopic: { type: String, index: true },               // optional subtopic
+    chunkId: { type: String, required: true, unique: true }, // unique ID
+    order: { type: Number },                            // optional ordering
+    text: { type: String, required: true },            // full chunk text
+    keywords: { type: [String], default: [] },
+    // ADD THIS FIELD:
+    embedding: {
+        type: [Number],
+        required: false // It will be generated during upload
+    },        // optional keywords for fast search
+    length: { type: Number },                          // optional length of chunk (words/characters)
+    summary: { type: String },                         // optional summary of the chunk
+    createdAt: { type: Date, default: Date.now },
 });
 
 // **Text index** for fast search across text, keywords, topic, subtopic
 FiqhChunkSchema.index({
-  text: "text",
-  keywords: "text",
-  topic: "text",
-  subtopic: "text",
+    text: "text",
+    keywords: "text",
+    topic: "text",
+    subtopic: "text",
 });
 
 export default mongoose.models.FiqhChunk ||
-  mongoose.model("FiqhChunk", FiqhChunkSchema);
+    mongoose.model("FiqhChunk", FiqhChunkSchema);

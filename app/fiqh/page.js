@@ -192,14 +192,23 @@ export default function AIAssistant() {
 
   const sampleQuestions = [
     {
-      question: "What are the latest developments in quantum computing?",
-      icon: "⚛️"
+      question: "ما شروط وجوب الصلاة؟",
+      icon: "🕰️"
     },
     {
-      question: "Explain the impact of AI on creative industries",
-      icon: "🎨"
+      question: "ما مبطلات الصلاة عند الشافعية؟",
+      icon: "❌"
+    },
+    {
+      question: "നമസ്‌കാരത്തിലെ ഫർളുകൾ എത്രയും എന്തൊക്കെയാണ്?",
+      icon: "📖"
+    },
+    {
+      question: "What are the integrals (arkan) of prayer in the Shafi‘i madhhab?",
+      icon: "🕌"
     }
   ];
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -271,15 +280,15 @@ export default function AIAssistant() {
                   <div className="absolute inset-0 rounded-full border border-blue-500/10 animate-spin-slow"></div>
                   <div className="absolute inset-3 rounded-full border border-cyan-400/15 animate-spin-reverse"></div>
                   <div className="absolute inset-6 rounded-full border border-indigo-400/20 animate-spin-slower"></div>
-                  
+
                   {/* Core sphere */}
                   <div className="absolute inset-8 rounded-full bg-gradient-to-br from-blue-500/20 via-cyan-500/15 to-indigo-500/20 backdrop-blur-xl shadow-[0_0_60px_rgba(59,130,246,0.15)] animate-pulse-gentle">
                     <div className="absolute inset-[2px] rounded-full bg-gradient-to-br from-blue-500/10 to-transparent"></div>
                   </div>
-                  
+
                   {/* Inner glow */}
                   <div className="absolute inset-12 rounded-full bg-gradient-to-br from-blue-400/30 to-cyan-400/20 blur-md"></div>
-                  
+
                   {/* Center dot */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gradient-to-br from-blue-300 to-cyan-300 shadow-[0_0_20px_rgba(59,130,246,0.6)]"></div>
                 </div>
@@ -310,7 +319,7 @@ export default function AIAssistant() {
                     >
                       {/* Hover gradient effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 transition-all duration-500"></div>
-                      
+
                       <div className="relative flex items-start gap-3 sm:gap-4">
                         <div className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/10 flex items-center justify-center text-xl sm:text-2xl border border-white/5 group-hover:border-white/10 transition-colors">
                           {item.icon}
@@ -340,11 +349,10 @@ export default function AIAssistant() {
                   style={{ animationDelay: `${i * 50}ms` }}
                 >
                   <div
-                    className={`max-w-[90%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%] px-5 sm:px-6 md:px-7 py-4 sm:py-5 rounded-2xl backdrop-blur-xl border transition-all duration-300 ${
-                      msg.role === "user"
+                    className={`max-w-[90%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%] px-5 sm:px-6 md:px-7 py-4 sm:py-5 rounded-2xl backdrop-blur-xl border transition-all duration-300 ${msg.role === "user"
                         ? "bg-white/[0.06] border-white/[0.12] text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
                         : "bg-blue-500/[0.04] border-blue-500/[0.15] text-white/90 shadow-[0_8px_32px_rgba(59,130,246,0.08)]"
-                    }`}
+                      }`}
                   >
                     <div className="whitespace-pre-wrap leading-relaxed text-[15px] sm:text-base font-light tracking-wide">
                       {msg.content}
@@ -378,7 +386,7 @@ export default function AIAssistant() {
           <div className="relative max-w-3xl mx-auto">
             {/* Glow effect on focus */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-cyan-500/10 to-blue-500/0 rounded-full blur-2xl opacity-0 transition-opacity duration-500 pointer-events-none focus-within:opacity-100"></div>
-            
+
             <div className="relative">
               <textarea
                 value={inputValue}
@@ -387,7 +395,7 @@ export default function AIAssistant() {
                 placeholder="Ask anything..."
                 rows={1}
                 className="w-full px-6 sm:px-8 md:px-10 py-4 sm:py-5 md:py-6 bg-white/[0.04] backdrop-blur-2xl border border-white/[0.1] rounded-full text-base sm:text-lg text-white placeholder-white/30 focus:outline-none focus:border-blue-400/40 focus:bg-white/[0.06] resize-none transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.3)] font-light tracking-wide"
-                style={{ 
+                style={{
                   minHeight: '60px',
                   maxHeight: '180px',
                   lineHeight: '1.5'
