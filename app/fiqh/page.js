@@ -269,7 +269,7 @@ export default function AIAssistant() {
       {/* Subtle grid overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none"></div>
 
-      <main className="relative flex-1 w-full max-w-[1200px] mx-auto flex flex-col px-4 sm:px-6 md:px-8 lg:px-12">
+      <main className="relative flex-1 w-full max-w-[1200px] mx-auto flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 py-16">
         <div className="flex-1 overflow-y-auto py-8 sm:py-12 md:py-16 lg:py-20">
           {!hasContent ? (
             <div className="flex flex-col items-center justify-center min-h-[75vh] text-center">
