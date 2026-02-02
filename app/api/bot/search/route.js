@@ -210,146 +210,94 @@ import { connectDB } from "@/lib/db";
 import FiqhChunk from "@/models/FiqhChunk";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/* ------------------ Language Utilities ------------------ */
+// 1. Precise Language Detection
 async function detectLanguage(text) {
   const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini", // Upgraded for better speed/accuracy
-    temperature: 0,
-    messages: [
-      { role: "system", content: "Detect language. Reply only with the code: ar, en, or ml." },
-      { role: "user", content: text }
-    ],
+    model: "gpt-4o-mini",
+    messages: [{ role: "system", content: "Identify language: ar, en, or ml. Reply only with the code." }, { role: "user", content: text }],
   });
   return res.choices[0].message.content.trim().toLowerCase();
 }
 
-async function translateToArabic(text, lang) {
+// 2. Specialized Fiqh Translation
+async function translateToFiqhArabic(text, lang) {
   if (lang === "ar") return text;
   const res = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    temperature: 0,
-    messages: [
-      { role: "system", content: "Translate this Fiqh question accurately into classical Arabic terminology." },
-      { role: "user", content: text }
-    ],
+    messages: [{ 
+      role: "system", 
+      content: "Translate this religious question into Classical Arabic (Fusha) using Shafi'i Fiqh terminology. For example, use 'صلاة' not 'prayers', 'طهاره' not 'cleaning'." 
+    }, { role: "user", content: text }],
   });
   return res.choices[0].message.content.trim();
 }
 
-async function translateFromArabic(text, lang) {
-  if (lang === "ar" || text.includes("لا يوجد نص")) return text;
-  const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0,
-    messages: [
-      { role: "system", content: `Translate this Shafi'i Fiqh answer into ${lang}. Keep technical terms accurate.` },
-      { role: "user", content: text }
-    ],
-  });
-  return res.choices[0].message.content.trim();
-}
-
-/* ------------------ STRICT SHAFII VALIDATION ------------------ */
-async function validateAnswer(sourceText, questionArabic) {
-  const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini", // 3.5 is too weak for strict Fiqh logic
-    temperature: 0,
-    messages: [
-      {
-        role: "system",
-        content: `
-أنت فقيه شافعي ومدقق لكتاب "فتح المعين" فقط.
-قواعد العمل:
-1. أجب فقط من النص المقدم.
-2. إذا سأل المستخدم عن "شروط" فلا تذكر الأركان.
-3. التزم بالمذهب الشافعي تماماً كما ورد في النص.
-4. إذا لم تجد الإجابة في النص، قل نصاً: "لا يوجد نص صريح في هذا الجزء من فتح المعين".
-5. لا تشرح من معلوماتك الخارجية.
-`
-      },
-      {
-        role: "user",
-        content: `السؤال: ${questionArabic}\n\nالنص المستخرج:\n${sourceText}`
-      }
-    ],
-  });
-
-  return res.choices[0].message.content.trim();
-}
-
-/* ------------------ SEARCH API (VECTOR VERSION) ------------------ */
+// 3. Search API Logic
 export async function POST(req) {
   try {
     await connectDB();
-
     const { question } = await req.json();
-    if (!question) return Response.json({ error: "Question is required" }, { status: 400 });
 
-    // 1. Language Handling
+    // A. Handle Language Flow
     const userLang = await detectLanguage(question);
-    const questionArabic = await translateToArabic(question, userLang);
+    const questionArabic = await translateToFiqhArabic(question, userLang);
 
-    // 2. Generate Question Embedding
+    // B. Create Embedding from the ARABIC version
     const embRes = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: questionArabic,
     });
     const vector = embRes.data[0].embedding;
 
-    // 3. Atlas Free Tier Vector Search (knnBeta)
-    const rankedResults = await FiqhChunk.aggregate([
+    // C. Vector Search (Optimized for Free Tier)
+    const results = await FiqhChunk.aggregate([
       {
         $search: {
-          index: "default", // Ensure this matches your Atlas Index Name
+          index: "default", 
           knnBeta: {
             vector: vector,
             path: "embedding",
-            k: 3 // Fetch top 3 most relevant pages/chunks
+            k: 5 // Increased to 5 for better coverage
           }
         }
       },
-      {
-        $project: {
-          text: 1,
-          book: 1,
-          topic: 1,
-          subtopic: 1,
-          chunkId: 1,
-          score: { $meta: "searchScore" }
-        }
-      }
+      { $limit: 3 } // Only take the top 3 for the LLM
     ]);
 
-    if (!rankedResults.length) {
-      const failMsg = await translateFromArabic("لم أجد نصاً مطابقاً في فتح المعين لهذا السؤال.", userLang);
-      return Response.json({ answer: failMsg });
+    if (!results.length) {
+      return Response.json({ answer: userLang === "ar" ? "لا يوجد نص." : "No relevant text found." });
     }
 
-    // 4. Extract and Validate
-    const contextText = rankedResults.map(r => r.text).join("\n\n---\n\n");
-    const validatedArabic = await validateAnswer(contextText, questionArabic);
-
-    // 5. Final Output
-    const finalAnswer = await translateFromArabic(validatedArabic, userLang);
+    // D. Build Context and Final Answer
+    const contextText = results.map(r => r.text).join("\n\n---\n\n");
+    
+    const finalRes = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are a Mufti specializing in Fathul Mueen. 
+          1. Answer the question in ${userLang === 'ar' ? 'Arabic' : userLang === 'ml' ? 'Malayalam' : 'English'}.
+          2. Use ONLY the provided text.
+          3. If the answer isn't there, say you can't find it in Fathul Mueen.` 
+        },
+        { role: "user", content: `Context: ${contextText}\n\nQuestion: ${question}` }
+      ],
+    });
 
     return Response.json({
-      answer: finalAnswer,
+      answer: finalRes.choices[0].message.content,
       source: {
-        book: rankedResults[0].book,
-        topic: rankedResults[0].topic,
-        subtopic: rankedResults[0].subtopic,
-        chunkId: rankedResults[0].chunkId,
-        relevance: Math.round(rankedResults[0].score * 100) + "%"
-      },
+        topic: results[0].topic,
+        subtopic: results[0].subtopic
+      }
     });
 
   } catch (error) {
-    console.error("Fiqh AI Search Error:", error);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error(error);
+    return Response.json({ error: "Search failed" }, { status: 500 });
   }
 }
 
