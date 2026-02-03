@@ -113,7 +113,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Home, BookOpen, MessageSquare, Scale, X, Menu , Pen } from "lucide-react";
+import { Home, BookOpen, MessageSquare, Scale, X, Menu, Pen, BarChart } from "lucide-react";
 
 export default function RightIconSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -123,6 +123,7 @@ export default function RightIconSidebar() {
     { href: "/fiqh", icon: BookOpen, label: "Fiqh" },
     { href: "/bot", icon: MessageSquare, label: "Assistant" },
     { href: "/fatwa", icon: Scale, label: "Fatwas" },
+    { href: "/education-assistant", icon: BarChart, label: "Analize" },
     { href: "https://edu-track-gamma.vercel.app/admin/student-portal/dashboard", icon: Pen, label: "EduTrack" },
   ];
 
