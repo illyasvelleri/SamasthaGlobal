@@ -192,7 +192,7 @@ export default function AIAssistant() {
 
   const sampleQuestions = [
     {
-      question: "ما شروط وجوب الصلاة؟",
+      question: "ما شروط الصلاة؟",
       icon: "🕰️"
     },
     {

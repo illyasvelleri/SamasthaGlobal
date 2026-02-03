@@ -205,7 +205,6 @@
 //   });
 // }
 
-
 import { connectDB } from "@/lib/db";
 import FiqhChunk from "@/models/FiqhChunk";
 import OpenAI from "openai";
@@ -214,93 +213,123 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // 1. Precise Language Detection
 async function detectLanguage(text) {
-  const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "system", content: "Identify language: ar, en, or ml. Reply only with the code." }, { role: "user", content: text }],
-  });
-  return res.choices[0].message.content.trim().toLowerCase();
+    const res = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        messages: [
+            {
+                role: "system",
+                content: "Identify the language of the user text. Reply ONLY with the language name in English (e.g., 'Malayalam', 'Arabic', 'English', 'French', 'Urdu')."
+            },
+            { role: "user", content: text }
+        ],
+    });
+    return res.choices[0].message.content.trim();
 }
 
-// 2. Specialized Fiqh Translation
+// 2. Expert Fiqh Translation (Focus on keywords)
 async function translateToFiqhArabic(text, lang) {
-  if (lang === "ar") return text;
-  const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ 
-      role: "system", 
-      content: "Translate this religious question into Classical Arabic (Fusha) using Shafi'i Fiqh terminology. For example, use 'صلاة' not 'prayers', 'طهاره' not 'cleaning'." 
-    }, { role: "user", content: text }],
-  });
-  return res.choices[0].message.content.trim();
+    // If it's already Arabic, we still want to "normalize" it (remove prefixes like 'فـ' or 'وـ')
+    const isArabic = lang.toLowerCase() === "arabic" || lang.toLowerCase() === "ar";
+
+    const systemPrompt = `
+You are a Fiqh Query Optimizer. 
+Your task is to convert the user's input into a "Search Key" specifically for the book Fathul Mueen.
+
+STRICT RULES:
+1. NORMALIZE: Strip away conversational prefixes like 'فـ' (so 'فيكفر' becomes 'يكفر'), 'هل', or 'ما هو'.
+2. TERMINOLOGY: Use exact Classical Arabic Fiqh terms (e.g., 'أركان' instead of 'أجزاء').
+3. CLEANING: If the user input is already Arabic, remove grammatical particles that might hinder vector matching.
+4. Output ONLY the optimized Arabic text. No explanations.`;
+
+    const res = await openai.chat.completions.create({
+        model: "gpt-4o-mini", // GPT-4o-mini is enough for this and cheaper
+        temperature: 0,
+        messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: text },
+        ],
+    });
+
+    return res.choices[0].message.content.trim();
 }
 
-// 3. Search API Logic
 export async function POST(req) {
-  try {
-    await connectDB();
-    const { question } = await req.json();
+    try {
+        await connectDB();
+        const { question } = await req.json();
 
-    // A. Handle Language Flow
-    const userLang = await detectLanguage(question);
-    const questionArabic = await translateToFiqhArabic(question, userLang);
+        const userLang = await detectLanguage(question);
+        const questionArabic = await translateToFiqhArabic(question, userLang);
 
-    // B. Create Embedding from the ARABIC version
-    const embRes = await openai.embeddings.create({
-      model: "text-embedding-3-small",
-      input: questionArabic,
-    });
-    const vector = embRes.data[0].embedding;
+        // B. Embedding
+        const embRes = await openai.embeddings.create({
+            model: "text-embedding-3-small",
+            input: questionArabic,
+        });
+        const vector = embRes.data[0].embedding;
 
-    // C. Vector Search (Optimized for Free Tier)
-    const results = await FiqhChunk.aggregate([
-      {
-        $search: {
-          index: "default", 
-          knnBeta: {
-            vector: vector,
-            path: "embedding",
-            k: 5 // Increased to 5 for better coverage
-          }
+        // C. ADVANCED SEARCH (Atlas Free Tier optimized)
+        const results = await FiqhChunk.aggregate([
+            {
+                $search: {
+                    index: "default",
+                    knnBeta: {
+                        vector: vector,
+                        path: "embedding",
+                        k: 15 // Higher K to ensure we catch long lists (like Arkan)
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    score: { $meta: "searchScore" }
+                }
+            },
+            { $match: { score: { $gt: 0.6 } } }, // THRESHOLD: Ignore low-quality matches
+            { $limit: 8 }
+        ]);
+
+        if (!results.length) {
+            const noMatchMsg = userLang === 'ml'
+                ? "ക്ഷമിക്കണം, ഫത്തുൽ മുഈനിൽ ഇതുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ കണ്ടെത്താനായില്ല."
+                : "No relevant text found in Fathul Mueen.";
+            return Response.json({ answer: noMatchMsg });
         }
-      },
-      { $limit: 3 } // Only take the top 3 for the LLM
-    ]);
 
-    if (!results.length) {
-      return Response.json({ answer: userLang === "ar" ? "لا يوجد نص." : "No relevant text found." });
+        // D. Context Building with Metadata labels
+        const contextText = results.map((r, i) => `[Doc ${i + 1}]: ${r.text}`).join("\n\n");
+
+        // E. THE "MUFTI" PROMPT - Strict Grounding
+        const finalRes = await openai.chat.completions.create({
+            model: "gpt-4o",
+            temperature: 0,
+            messages: [
+                {
+                    role: "system",
+                    content: `You are a Shafi'i Mufti. Answer ONLY using the provided context from Fathul Mueen.
+          
+          RULES:
+          1. LANGUAGE: You must answer in ${userLang}. (If the user asked in ${userLang}, reply in ${userLang}).
+          2. ACCURACY: If you mention a Fiqh term, include the Arabic in brackets. (e.g., നിയ്യത്ത് [نية]).
+          3. LISTS: If the user asks for "how many" or "what are", extract the list exactly as written in the text.
+          4. NO HALLUCINATION: If the context talks about 'Purification' but the user asked about 'Marriage', say you can't find it.
+          5. Keep the tone religious and respectful.`
+                },
+                { role: "user", content: `Context:\n${contextText}\n\nQuestion: ${question}` }
+            ],
+        });
+
+        return Response.json({
+            answer: finalRes.choices[0].message.content,
+            source: results.map(r => ({ topic: r.topic, subtopic: r.subtopic }))
+        });
+
+    } catch (error) {
+        console.error("Search Error:", error);
+        return Response.json({ error: "Search failed" }, { status: 500 });
     }
-
-    // D. Build Context and Final Answer
-    const contextText = results.map(r => r.text).join("\n\n---\n\n");
-    
-    const finalRes = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { 
-          role: "system", 
-          content: `You are a Mufti specializing in Fathul Mueen. 
-          1. Answer the question in ${userLang === 'ar' ? 'Arabic' : userLang === 'ml' ? 'Malayalam' : 'English'}.
-          2. Use ONLY the provided text.
-          3. If the answer isn't there, say you can't find it in Fathul Mueen.` 
-        },
-        { role: "user", content: `Context: ${contextText}\n\nQuestion: ${question}` }
-      ],
-    });
-
-    return Response.json({
-      answer: finalRes.choices[0].message.content,
-      source: {
-        topic: results[0].topic,
-        subtopic: results[0].subtopic
-      }
-    });
-
-  } catch (error) {
-    console.error(error);
-    return Response.json({ error: "Search failed" }, { status: 500 });
-  }
 }
-
 
 // import { connectDB } from "@/lib/db";
 // import FiqhChunk from "@/models/FiqhChunk";
