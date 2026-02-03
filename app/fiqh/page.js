@@ -293,7 +293,16 @@ export default function AIAssistant() {
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gradient-to-br from-blue-300 to-cyan-300 shadow-[0_0_20px_rgba(59,130,246,0.6)]"></div>
                 </div>
               </div>
-
+              {/* Beta Status Badge */}
+              <div className="flex items-center gap-2 px-3 py-1 mb-8 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-md animate-fade-in">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                </span>
+                <span className="text-[10px] sm:text-xs font-medium tracking-widest uppercase text-cyan-400/90">
+                  Now Optimized: باب الصلاة (Kitab as-Salah)
+                </span>
+              </div>
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white mb-6 sm:mb-8 leading-[1.1] px-4">
                 <span className="bg-gradient-to-r from-white via-blue-50 to-cyan-50 bg-clip-text text-transparent">
@@ -350,8 +359,8 @@ export default function AIAssistant() {
                 >
                   <div
                     className={`max-w-[90%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%] px-5 sm:px-6 md:px-7 py-4 sm:py-5 rounded-2xl backdrop-blur-xl border transition-all duration-300 ${msg.role === "user"
-                        ? "bg-white/[0.06] border-white/[0.12] text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
-                        : "bg-blue-500/[0.04] border-blue-500/[0.15] text-white/90 shadow-[0_8px_32px_rgba(59,130,246,0.08)]"
+                      ? "bg-white/[0.06] border-white/[0.12] text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                      : "bg-blue-500/[0.04] border-blue-500/[0.15] text-white/90 shadow-[0_8px_32px_rgba(59,130,246,0.08)]"
                       }`}
                   >
                     <div className="whitespace-pre-wrap leading-relaxed text-[15px] sm:text-base font-light tracking-wide">
