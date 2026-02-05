@@ -232,7 +232,7 @@ export default function Home() {
           {/* Value Statement */}
           <div className="space-y-6">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight leading-[1.05]">
-              Samastha Univerce
+              Samastha Universe
             </h1>
             
             <p className="text-lg sm:text-xl text-slate-600 font-light max-w-xl mx-auto">
